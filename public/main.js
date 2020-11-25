@@ -6,8 +6,6 @@
 //   dreamsList.appendChild(newListItem);
 // }
 
-fetch("/meetings")
-  .then(response => response.json())
-  .then(meetings => {
-    document.getElementById("meetings").innerHTML = JSON.stringify(meetings)
+fetch("/meetings").then(async(meetings) => {
+    document.getElementById("meetings").innerHTML += await meetings.text()
   });
