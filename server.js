@@ -25,26 +25,31 @@ app.use(cors())
 app.get("/", (request, response) => {
   var options = {
     method: "POST",
-    url: "https://zoom.us/oauth/token",
-    qs: {
-      grant_type: "authorization_code",
-      code: "IcU8aagJf0_2vesslKITryUOBL0EQWeeQ",
-      redirect_uri: "https://class-manage.web.app"
-    },
+    // url: "https://zoom.us/oauth/token",
+    // qs: {
+    //   grant_type: "authorization_code",
+    //   code: "EweM9POkkV_2vesslKITryUOBL0EQWeeQ",
+    //   redirect_uri: "https://class-manage.web.app"
+    // },
     headers: {
       Authorization:
         "Basic " +
         Buffer.from(
           "K09RzbDQoKa5tLEQIlw" + ":" + "yQatemHkRICZ5z8mMpnIH8LIVBW1wI0w"
         ).toString("base64")
-    }
+    },
+    body: ''
   };
-  response.write(options.toString())
+  response.write(JSON.stringify(options))
 
   fetch(
-    "https://zoom.us/oauth/token?grant_type=authorization_code&code=IcU8aagJf0_2vesslKITryUOBL0EQWeeQ&redirect_uri=https://class-manage.web.app",
+    "https://zoom.us/oauth/token?grant_type=authorization_code&code=3sd6TvTje3_2vesslKITryUOBL0EQWeeQ&redirect_uri=https%3A%2F%2Fclass-manage.web.app",
     options
-  ).then(res => response.write(res.toString())).catch(e => console.log(e));
+  ).then(res => {
+    console.log(res)
+    response.end(JSON.stringify(res))
+  }).catch(e => console.log(e));
+  
 });
 
 // listen for requests :)
