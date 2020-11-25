@@ -3,21 +3,42 @@ const app = express();
 var cors = require("cors");
 var request = require("request");
 const url = require('url');
+const firebase = require('firebase');
+
+const firebaseConfig = {
+    apiKey: "AIzaSyBcq0iDH5wZgVeP0BCVVbvE61oGHr0QGCQ",
+    authDomain: "amcec-shayan.firebaseapp.com",
+    databaseURL: "https://amcec-shayan.firebaseio.com",
+    projectId: "amcec-shayan",
+    storageBucket: "amcec-shayan.appspot.com",
+    messagingSenderId: "451660000724",
+    appId: "1:451660000724:web:e1de94e231fb5aec22fa41"
+};
 
 app.use(express.static("public"));
 app.use(cors());
 
+firebase.initializeApp(firebaseConfig);
+var database = firebase.database();
+
+var tokens = {}
+var uid = ''
+
 app.get("/", (req, res) => {
-    req.sendFile("index.html")
+    res.sendFile(__dirname + "/views/index.html")
 })
 
-app.get("/token", (req, res) => {
-    var tokenOptions = {
+app.get("/main", (req, res) => {
+    res.sendFile(__dirname + "/views/main.html")
+})
+
+const getTokens = (code, callback) => {
+    var options = {
         method: "POST",
         url: "https://zoom.us/oauth/token",
         qs: {
             grant_type: "authorization_code",
-            code: url.parse(req.url, true).query.code,
+            code: code,
             redirect_uri: "https://famous-granite-auroraceratops.glitch.me/token"
         },
         headers: {
@@ -28,32 +49,72 @@ app.get("/token", (req, res) => {
                 ).toString("base64")
         }
     };
-
-    request(tokenOptions, function (tokenError, tokenRes, tokenBody) {
-        if (tokenError) res.end(tokenError);
+    request(options, (error, response, body) => {
+        if (error) res.end(error);
         else {
-            var tokens = JSON.parse(tokenBody)
-
-            var profileOptions = {
-                method: "GET",
-                url: "https://api.zoom.us/v2/users/me",
-                headers: {
-                    Authorization:
-                        "Bearer " + tokens.access_token
-                }
-            }
-
-            request(profileOptions, function (error, profileRes, body) {
-                if (error) res.end(error);
-                else {
-                    res.write(tokenBody)
-                    res.write(body);
-                    console.log(JSON.parse(body));
-                    res.end();
-                }
-            });
+            tokens = JSON.parse(body)
+            callback()
         }
+    })
+}
+
+const getUser = (callback) => {
+    var options = {
+        method: "GET",
+        url: "https://api.zoom.us/v2/users/me",
+        headers: {
+            Authorization:
+                "Bearer " + tokens.access_token
+        }
+    }
+
+    request(options, function (error, response, body) {
+        if (error) res.end(error);
+        else callback(JSON.parse(body))
     });
+}
+
+const getMeetings = (callback) => {
+    var options = {
+        method: "GET",
+        url: `https://api.zoom.us/v2/users/${uid}/meetings`,
+        headers: {
+            Authorization:
+                "Bearer " + tokens.access_token
+        }
+    }
+
+    request(options, function (error, response, body) {
+        if (error) res.end(error);
+        else callback(JSON.parse(body))
+    });
+}
+
+app.get("/token", (req, res) => {
+    getTokens(url.parse(req.url, true).query.code, () => {
+        getUser((user) => {
+            console.log(user);
+            if (user) {
+                uid = user.id
+                database.ref('class-scheduler/' + user.id).set({
+                    uid: user.id,
+                    email: user.email,
+                    access_token: tokens.access_token,
+                    refresh_token: tokens.refresh_token
+                });
+                res.redirect('/main')
+
+                // getMeetings((meetings) => {
+                //     console.log(meetings);
+                //     res.write(JSON.stringify(meetings));
+                //     res.end();
+                // })
+            }
+            else {
+                res.end()
+            }
+        })
+    })
 });
 
 const listener = app.listen(process.env.PORT, () => {
