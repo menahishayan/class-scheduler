@@ -14,7 +14,7 @@ app.get("/token", (req, res) => {
         qs: {
             grant_type: "authorization_code",
             code: url.parse(req.url, true).query.code,
-            redirect_uri: "https://class-manage.web.app"
+            redirect_uri: "https://famous-granite-auroraceratops.glitch.me/token"
         },
         headers: {
             Authorization:
