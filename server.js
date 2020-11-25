@@ -7,6 +7,10 @@ const url = require('url');
 app.use(express.static("public"));
 app.use(cors());
 
+app.get("/", (req, res) => {
+    req.sendFile("index.html")
+})
+
 app.get("/token", (req, res) => {
     var tokenOptions = {
         method: "POST",
