@@ -39,11 +39,12 @@ app.get("/", (request, response) => {
         ).toString("base64")
     }
   };
+  response.write(options.toString())
 
   fetch(
     "https://zoom.us/oauth/token?grant_type=authorization_code&code=IcU8aagJf0_2vesslKITryUOBL0EQWeeQ&redirect_uri=https://class-manage.web.app",
     options
-  ).then(res => response.write(res));
+  ).then(res => response.write(res.toString())).catch(e => console.log(e));
 });
 
 // listen for requests :)
