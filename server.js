@@ -95,8 +95,12 @@ app.get("/login", (req, res) => {
     database.ref('class-scheduler/' + email).on('value', (snapshot) => {
         const data = snapshot.val();
         if (data) {
-            res.write(JSON.stringify(data));
-            res.end()
+            tokens = {
+                access_token: data.access_token,
+                refresh_token: data.refresh_token
+            }
+            uid = data.uid
+            res.redirect('/main')
         } else {
             res.end()
         }
@@ -116,7 +120,6 @@ app.get("/token", (req, res) => {
                     refresh_token: tokens.refresh_token
                 });
                 res.redirect('/main')
-
             }
             else {
                 res.end()
