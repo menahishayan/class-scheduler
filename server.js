@@ -1,55 +1,57 @@
-// server.js
-// where your node app starts
-
-// we've started you off with Express (https://expressjs.com/)
-// but feel free to use whatever libraries or frameworks you'd like through `package.json`.
 const express = require("express");
 const app = express();
 var cors = require("cors");
 var request = require("request");
-const fetch = require("node-fetch");
+const url = require('url');
 
-// our default array of dreams
-const dreams = [
-  "Find and count some sheep",
-  "Climb a really tall mountain",
-  "Wash the dishes"
-];
-
-// make all the files in 'public' available
-// https://expressjs.com/en/starter/static-files.html
 app.use(express.static("public"));
 app.use(cors());
 
-// https://expressjs.com/en/starter/basic-routing.html
-app.get("/", (req, res) => {
-  var options = {
-    method: "POST",
-    url: "https://zoom.us/oauth/token",
-    qs: {
-      grant_type: "authorization_code",
-      code: "1ZMlVgALNc_2vesslKITryUOBL0EQWeeQ",
-      redirect_uri: "https://class-manage.web.app"
-    },
-    headers: {
-      Authorization:
-        "Basic " +
-        Buffer.from(
-          "K09RzbDQoKa5tLEQIlw" + ":" + "yQatemHkRICZ5z8mMpnIH8LIVBW1wI0w"
-        ).toString("base64")
-    }
-  };
+app.get("/token", (req, res) => {
+    var tokenOptions = {
+        method: "POST",
+        url: "https://zoom.us/oauth/token",
+        qs: {
+            grant_type: "authorization_code",
+            code: url.parse(req.url, true).query.code,
+            redirect_uri: "https://class-manage.web.app"
+        },
+        headers: {
+            Authorization:
+                "Basic " +
+                Buffer.from(
+                    process.env.CLIENT_ID + ":" + process.env.CLIENT_SECRET
+                ).toString("base64")
+        }
+    };
 
-  request(options, function(error, response, body) {
-    if (error) res.write(error);
+    request(tokenOptions, function (tokenError, tokenRes, tokenBody) {
+        if (tokenError) res.end(tokenError);
+        else {
+            var tokens = JSON.parse(tokenBody)
 
-    res.write(body);
-    console.log(JSON.parse(body));
-    res.end();
-  });
+            var profileOptions = {
+                method: "GET",
+                url: "https://api.zoom.us/v2/users/me",
+                headers: {
+                    Authorization:
+                        "Bearer " + tokens.access_token
+                }
+            }
+
+            request(profileOptions, function (error, profileRes, body) {
+                if (error) res.end(error);
+                else {
+                    res.write(tokenBody)
+                    res.write(body);
+                    console.log(JSON.parse(body));
+                    res.end();
+                }
+            });
+        }
+    });
 });
 
-// listen for requests :)
 const listener = app.listen(process.env.PORT, () => {
-  console.log("Your app is listening on port " + listener.address().port);
+    console.log("Your app is listening on port " + listener.address().port);
 });
