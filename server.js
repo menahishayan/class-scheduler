@@ -90,13 +90,26 @@ const getMeetings = (callback) => {
     });
 }
 
+app.get("/login", (req, res) => {
+    let email = url.parse(req.url, true).query.email
+    database.ref('class-scheduler/' + email).on('value', (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            res.write(JSON.stringify(data));
+            res.end()
+        } else {
+            res.end()
+        }
+    });
+})
+
 app.get("/token", (req, res) => {
     getTokens(url.parse(req.url, true).query.code, () => {
         getUser((user) => {
             console.log(user);
             if (user) {
                 uid = user.id
-                database.ref('class-scheduler/' + user.id).set({
+                database.ref('class-scheduler/' + user.email).set({
                     uid: user.id,
                     email: user.email,
                     access_token: tokens.access_token,

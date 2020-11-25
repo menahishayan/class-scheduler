@@ -8,7 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="A cool thing made with Glitch">
 
-    <title>Welcome to Glitch!</title>
+    <title>Class Scheduler</title>
 
     <link id="favicon" rel="icon" href="https://glitch.com/edit/favicon-app.ico" type="image/x-icon">
     <!-- import the webpage's stylesheet -->
@@ -17,7 +17,14 @@
   </head>
   <body>
     <div>
-      <button onClick="window.location.href = `https://zoom.us/oauth/authorize?response_type=code&redirect_uri=${'https%3A%2F%2Ffamous-granite-auroraceratops.glitch.me%2Ftoken'}&client_id=${'K09RzbDQoKa5tLEQIlw'}`">Auth</button>
+      <form action="https://zoom.us/oauth/authorize">
+        <input type="hidden" name="response_type" value="code"/>
+        <input type="hidden" name="redirect_uri" value="https://famous-granite-auroraceratops.glitch.me/token"/>
+        <input type="hidden" name="client_id" value="K09RzbDQoKa5tLEQIlw"/>
+        <input type="email" id="email"/>
+        <button onClick="loginHandler()">Login with Zoom</button>
+      </form>
+      <p id="resPreview"></p>
   </div>
   </body>
 </html>

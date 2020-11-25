@@ -1,5 +1,4 @@
-const dreamsList = document.getElementById("dreams");
-const dreamsForm = document.querySelector("form");
+const form = document.querySelector("form");
 
 function appendNewDream(dream) {
   const newListItem = document.createElement("li");
@@ -7,17 +6,27 @@ function appendNewDream(dream) {
   dreamsList.appendChild(newListItem);
 }
 
-fetch("/dreams")
-  .then(response => response.json())
-  .then(dreams => {
-    dreamsList.firstElementChild.remove();
-    dreams.forEach(appendNewDream);
-    dreamsForm.addEventListener("submit", event => {
-      event.preventDefault();
-      let newDream = dreamsForm.elements.dream.value;
-      dreams.push(newDream);
-      appendNewDream(newDream);
-      dreamsForm.reset();
-      dreamsForm.elements.dream.focus();
-    });
-  });
+// fetch("/dreams")
+//   .then(response => response.json())
+//   .then(dreams => {
+//     dreamsList.firstElementChild.remove();
+//     dreams.forEach(appendNewDream);
+//     dreamsForm.addEventListener("submit", event => {
+//       event.preventDefault();
+//       let newDream = dreamsForm.elements.dream.value;
+//       dreams.push(newDream);
+//       appendNewDream(newDream);
+//       dreamsForm.reset();
+//       dreamsForm.elements.dream.focus();
+//     });
+//   });
+
+const loginHandler = () => {
+  const email = document.getElementById("email");
+  fetch('/login?email=' + email).then(async(response) => {
+    if(response) document.getElementById("resPreview").innerHTML = await response.text()
+    else {
+      form.submit()
+    }
+  })
+}
