@@ -109,7 +109,7 @@ app.get("/token", (req, res) => {
             console.log(user);
             if (user) {
                 uid = user.id
-                database.ref('class-scheduler/' + user.email).set({
+                database.ref('class-scheduler/' + user.email.split('.')[0]).set({
                     uid: user.id,
                     email: user.email,
                     access_token: tokens.access_token,
