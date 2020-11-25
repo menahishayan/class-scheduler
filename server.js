@@ -117,16 +117,19 @@ app.get("/token", (req, res) => {
                 });
                 res.redirect('/main')
 
-                // getMeetings((meetings) => {
-                //     console.log(meetings);
-                //     res.write(JSON.stringify(meetings));
-                //     res.end();
-                // })
             }
             else {
                 res.end()
             }
         })
+    })
+});
+
+app.get("/meetings", (req, res) => {
+    getMeetings((meetings) => {
+        console.log(meetings);
+        res.write(JSON.stringify(meetings));
+        res.end();
     })
 });
 
