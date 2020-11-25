@@ -24,31 +24,24 @@ app.use(cors())
 // https://expressjs.com/en/starter/basic-routing.html
 app.get("/", (request, response) => {
   var options = {
-    method: "POST",
-    // url: "https://zoom.us/oauth/token",
-    // qs: {
-    //   grant_type: "authorization_code",
-    //   code: "EweM9POkkV_2vesslKITryUOBL0EQWeeQ",
-    //   redirect_uri: "https://class-manage.web.app"
-    // },
-    headers: {
-      Authorization:
-        "Basic " +
-        Buffer.from(
-          "K09RzbDQoKa5tLEQIlw" + ":" + "yQatemHkRICZ5z8mMpnIH8LIVBW1wI0w"
-        ).toString("base64")
+    method: 'POST',
+    url: 'https://zoom.us/oauth/token',
+    qs: {
+        grant_type: 'authorization_code',
+        code: 'IcU8aagJf0_2vesslKITryUOBL0EQWeeQ',
+        redirect_uri: 'https://class-manage.web.app'
     },
-    body: ''
-  };
-  response.write(JSON.stringify(options))
+    headers: {
+        Authorization: 'Basic ' + Buffer.from('K09RzbDQoKa5tLEQIlw' + ':' + 'yQatemHkRICZ5z8mMpnIH8LIVBW1wI0w').toString('base64')
+    }
+};
 
-  fetch(
-    "https://zoom.us/oauth/token?grant_type=authorization_code&code=3sd6TvTje3_2vesslKITryUOBL0EQWeeQ&redirect_uri=https%3A%2F%2Fclass-manage.web.app",
-    options
-  ).then(res => {
-    console.log(res)
-    response.end(JSON.stringify(res))
-  }).catch(e => console.log(e));
+  request(options, function(error, response, body) {
+   if (error) throw new Error(error);
+
+   console.log(body);
+   console.log(JSON.parse(body));
+  });
   
 });
 
