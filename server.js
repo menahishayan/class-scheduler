@@ -5,6 +5,7 @@
 // but feel free to use whatever libraries or frameworks you'd like through `package.json`.
 const express = require("express");
 const app = express();
+var request = require("request");
 
 // our default array of dreams
 const dreams = [
@@ -19,13 +20,24 @@ app.use(express.static("public"));
 
 // https://expressjs.com/en/starter/basic-routing.html
 app.get("/", (request, response) => {
-  response.sendFile(__dirname + "/views/index.html");
-});
+  var options = {
+    method: 'POST',
+    url: 'https://zoom.us/oauth/token',
+    qs: {
+        grant_type: 'authorization_code',
+        code: 'IcU8aagJf0_2vesslKITryUOBL0EQWeeQ',
+        redirect_uri: 'https://class-manage.web.app'
+    },
+    headers: {
+        Authorization: 'Basic ' + Buffer.from('K09RzbDQoKa5tLEQIlw' + ':' + 'yQatemHkRICZ5z8mMpnIH8LIVBW1wI0w').toString('base64')
+    }
+};
 
-// send the default array of dreams to the webpage
-app.get("/dreams", (request, response) => {
-  // express helps us take JS objects and send them as JSON
-  response.json(dreams);
+  request(options, function(error, response, body) {
+   if (error) throw new Error(error);
+
+   response.write(body);
+  });
 });
 
 // listen for requests :)
