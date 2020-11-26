@@ -170,6 +170,7 @@ app.get("/login", (req, res) => {
     email = q.email.split('.')[0]
     database.ref('class-scheduler/' + email).on('value', async(snapshot) => {
         const data = await snapshot.val();
+        console.log(data);
         if (data) {
             tokens = {
                 zoom_access_token: data.zoom_access_token,
