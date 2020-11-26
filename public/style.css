@@ -54,3 +54,18 @@ footer {
   padding-top: 1.5em;
   border-top: 1px solid lightgrey;
 }
+
+.course {
+  background-color: skyblue;
+  border-radius: 12px;
+  padding: 15px;
+}
+
+.course-name {
+  font-weight: bold;
+}
+
+.course-id, .course-cal {
+  font-size: small;
+  color: grey;
+}

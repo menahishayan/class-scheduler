@@ -218,7 +218,7 @@ app.get("/token", (req, res) => {
 app.get("/meetings", (req, res) => {
     getZoomMeetings((meetings) => {
         getClassroom((courses) => {
-            res.end({meetings,courses});
+            res.end(JSON.stringify({meetings,courses}));
         })
     })
 });
