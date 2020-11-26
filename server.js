@@ -23,7 +23,7 @@ firebase.initializeApp(firebaseConfig);
 var database = firebase.database();
 
 var tokens = {}
-var uid = '', email= ''
+var uid = '', email = ''
 
 const GCP_SCOPES = ['https://www.googleapis.com/auth/calendar.app.created', 'https://www.googleapis.com/auth/classroom.courses.readonly', 'https://www.googleapis.com/auth/classroom.announcements'];
 
@@ -32,7 +32,7 @@ const GCP = new google.auth.OAuth2(
 );
 
 function gcpAuthorize(res) {
-    if (!tokens.gcp_access_token || !tokens.gcp_refresh_token) {
+    if (!tokens.gcp_access_token) {
         const authUrl = GCP.generateAuthUrl({
             access_type: 'offline',
             scope: GCP_SCOPES,
@@ -70,12 +70,17 @@ app.get("/gcp-token", (req, res) => {
             tokens.gcp_refresh_token = token.refresh_token
             tokens.gcp_scope = token.scope
             tokens.gcp_expiry = token.expiry_date
-            database.ref('class-scheduler/' + email).update({
-                gcp_access_token: token.access_token,
-                gcp_refresh_token: token.refresh_token,
-                gcp_scope: token.scope,
-                gcp_expiry: token.expiry_date
-            });
+            if (token.access_token)
+                database.ref('class-scheduler/' + email).update(token.refresh_token ? {
+                    gcp_access_token: token.access_token,
+                    gcp_refresh_token: token.refresh_token,
+                    gcp_scope: token.scope,
+                    gcp_expiry: token.expiry_date
+                } : {
+                        gcp_access_token: token.access_token,
+                        gcp_scope: token.scope,
+                        gcp_expiry: token.expiry_date
+                    });
             res.redirect('/main')
         }
     });
@@ -117,7 +122,7 @@ const getZoomUser = (callback) => {
         url: "https://api.zoom.us/v2/users/me",
         headers: {
             Authorization:
-                "Bearer " + tokens.zoom_refresh_token
+                "Bearer " + tokens.zoom_access_token
         }
     }
 
@@ -133,7 +138,7 @@ const getZoomMeetings = (callback) => {
         url: `https://api.zoom.us/v2/users/${uid}/meetings`,
         headers: {
             Authorization:
-                "Bearer " + tokens.zoom_refresh_token
+                "Bearer " + tokens.zoom_access_token
         }
     }
 
@@ -171,7 +176,7 @@ app.get("/token", (req, res) => {
             if (user) {
                 uid = user.id
                 email = user.email.split('.')[0]
-                database.ref('class-scheduler/' + email).set({
+                database.ref('class-scheduler/' + email).update({
                     uid: user.id,
                     email: user.email,
                     zoom_access_token: tokens.zoom_access_token,
