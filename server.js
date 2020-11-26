@@ -156,7 +156,14 @@ const getZoomMeetings = (callback) => {
 }
 
 const getClassroom = (callback) => {
-    const classroom = google.classroom({ version: 'v1', GCP });
+    GCP.setCredentials({
+        access_token: tokens.gcp_access_token,
+        refresh_token: tokens.gcp_refresh_token,
+        scope: tokens.gcp_scope,
+        token_type: 'Bearer',
+        expiry_date: tokens.gcp_expiry,
+    });
+    const classroom = google.classroom({ version: 'v1', auth: GCP });
     classroom.courses.list({ pageSize: 15 }, (err, res) => {
         if (err) {
             console.log('The API returned an error: ' + err);
@@ -210,11 +217,8 @@ app.get("/token", (req, res) => {
 
 app.get("/meetings", (req, res) => {
     getZoomMeetings((meetings) => {
-        console.log(meetings);
-        if (meetings) res.write(JSON.stringify(meetings));
         getClassroom((courses) => {
-            if (courses) res.write(JSON.stringify(courses));
-            res.end();
+            res.end({meetings,courses});
         })
     })
 });

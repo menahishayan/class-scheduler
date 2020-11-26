@@ -1,0 +1,70 @@
+[
+    {
+        "page_size": 30,
+        "total_records": 0,
+        "next_page_token": "",
+        "meetings": []
+    },
+    [
+        {
+            "id": "189306482316",
+            "name": "VII B(ACA)",
+            "section": "B",
+            "descriptionHeading": "VII B(ACA) B",
+            "ownerId": "116632368279290217137",
+            "creationTime": "2020-10-08T11:19:26.481Z",
+            "updateTime": "2020-10-08T11:19:25.777Z",
+            "courseState": "ACTIVE",
+            "alternateLink": "https://classroom.google.com/c/MTg5MzA2NDgyMzE2",
+            "teacherGroupEmail": "VII_B_ACA_B_teachers_a73d5f85@classroom.google.com",
+            "courseGroupEmail": "VII_B_ACA_B_178f9630@classroom.google.com",
+            "guardiansEnabled": false,
+            "calendarId": "classroom115887081879113590368@group.calendar.google.com"
+        },
+        {
+            "id": "146638547367",
+            "name": "VII",
+            "section": "B",
+            "descriptionHeading": "VII B",
+            "ownerId": "108804283102109126470",
+            "creationTime": "2020-09-28T14:34:44.700Z",
+            "updateTime": "2020-09-28T14:35:15.987Z",
+            "courseState": "ACTIVE",
+            "alternateLink": "https://classroom.google.com/c/MTQ2NjM4NTQ3MzY3",
+            "teacherGroupEmail": "VII_B_teachers_ab05df19@classroom.google.com",
+            "courseGroupEmail": "VII_B_1b379145@classroom.google.com",
+            "guardiansEnabled": false,
+            "calendarId": "classroom115007943480665532491@group.calendar.google.com"
+        },
+        {
+            "id": "170894659666",
+            "name": "SAN 2020-21 ODD",
+            "section": "VII B",
+            "descriptionHeading": "SAN 2020-21 ODD VII B",
+            "ownerId": "107177911979904491259",
+            "creationTime": "2020-09-22T08:48:21.271Z",
+            "updateTime": "2020-09-22T09:53:18.688Z",
+            "courseState": "ACTIVE",
+            "alternateLink": "https://classroom.google.com/c/MTcwODk0NjU5NjY2",
+            "teacherGroupEmail": "SAN_2020_21_ODD_VII_B_teachers_215bbaf7@classroom.google.com",
+            "courseGroupEmail": "SAN_2020_21_ODD_VII_B_fd485683@classroom.google.com",
+            "guardiansEnabled": false,
+            "calendarId": "classroom106324125971751136328@group.calendar.google.com"
+        },
+        {
+            "id": "155694654389",
+            "name": "Machine Learning Class 17CS73 ,Sem-7th,sec-B",
+            "section": "B",
+            "descriptionHeading": "Machine Learning Class 17CS73 ,Sem-7th,sec-B B",
+            "ownerId": "115048793261075947139",
+            "creationTime": "2020-09-13T15:07:51.251Z",
+            "updateTime": "2020-09-13T15:12:29.138Z",
+            "courseState": "ACTIVE",
+            "alternateLink": "https://classroom.google.com/c/MTU1Njk0NjU0Mzg5",
+            "teacherGroupEmail": "Machine_Learning_Class_17CS73_Sem_7th_sec_B_B_teachers_68a1ba00@classroom.google.com",
+            "courseGroupEmail": "Machine_Learning_Class_17CS73_Sem_7th_sec_B_B_04cfbf3d@classroom.google.com",
+            "guardiansEnabled": false,
+            "calendarId": "classroom100137724610683109535@group.calendar.google.com"
+        }
+    ]
+]
