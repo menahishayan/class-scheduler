@@ -47,7 +47,7 @@ function gcpAuthorize(res) {
             expiry_date: tokens.gcp_expiry,
         });
         // classroom = google.classroom({ version: 'v1', GCP });
-        res.end('/main');
+        res.redirect('/main');
     }
 }
 
@@ -170,7 +170,6 @@ app.get("/login", (req, res) => {
     email = q.email.split('.')[0]
     database.ref('class-scheduler/' + email).on('value', async(snapshot) => {
         const data = await snapshot.val();
-        console.log(data);
         if (data) {
             tokens = {
                 zoom_access_token: data.zoom_access_token,
@@ -181,7 +180,6 @@ app.get("/login", (req, res) => {
                 gcp_expiry: data.gcp_expiry,
             }
             uid = data.uid
-            console.log(tokens);
             gcpAuthorize(res)
         } else {
             res.redirect(`https://zoom.us/oauth/authorize?response_type=${q.response_type}&redirect_uri=${q.redirect_uri}&client_id=${client_id}`)
@@ -192,7 +190,6 @@ app.get("/login", (req, res) => {
 app.get("/token", (req, res) => {
     getZoomToken(url.parse(req.url, true).query.code, () => {
         getZoomUser((user) => {
-            console.log(user);
             if (user) {
                 uid = user.id
                 email = user.email.split('.')[0]
