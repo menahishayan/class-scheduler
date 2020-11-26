@@ -4,6 +4,7 @@ var cors = require("cors");
 var request = require("request");
 const url = require('url');
 const firebase = require('firebase');
+const { google } = require('googleapis');
 
 const firebaseConfig = {
     apiKey: "AIzaSyBcq0iDH5wZgVeP0BCVVbvE61oGHr0QGCQ",
@@ -22,7 +23,32 @@ firebase.initializeApp(firebaseConfig);
 var database = firebase.database();
 
 var tokens = {}
-var uid = ''
+var uid = '', email= ''
+
+const GCP_SCOPES = ['https://www.googleapis.com/auth/calendar.app.created', 'https://www.googleapis.com/auth/classroom.courses.readonly', 'https://www.googleapis.com/auth/classroom.announcements'];
+
+const GCP = new google.auth.OAuth2(
+    process.env.GCP_CLIENT_ID, process.env.GCP_CLIENT_SECRET, 'https://famous-granite-auroraceratops.glitch.me/gcp-token'
+);
+
+function gcpAuthorize(res) {
+    if (!tokens.gcp_access_token || !tokens.gcp_refresh_token) {
+        const authUrl = GCP.generateAuthUrl({
+            access_type: 'offline',
+            scope: GCP_SCOPES,
+        });
+        res.redirect(authUrl);
+    } else {
+        GCP.setCredentials({
+            access_token: tokens.gcp_access_token,
+            refresh_token: tokens.gcp_refresh_token,
+            scope: tokens.gcp_scope,
+            token_type: 'Bearer',
+            expiry_date: tokens.gcp_expiry,
+        });
+        res.redirect('/main');
+    }
+}
 
 app.get("/", (req, res) => {
     res.sendFile(__dirname + "/views/index.html")
@@ -32,7 +58,30 @@ app.get("/main", (req, res) => {
     res.sendFile(__dirname + "/views/main.html")
 })
 
-const getTokens = (code, callback) => {
+app.get("/gcp-token", (req, res) => {
+    let code = url.parse(req.url, true).query.code
+    GCP.getToken(code, (err, token) => {
+        if (err) {
+            console.log(err);
+            res.end()
+        } else {
+            GCP.setCredentials(token);
+            tokens.gcp_access_token = token.access_token
+            tokens.gcp_refresh_token = token.refresh_token
+            tokens.gcp_scope = token.scope
+            tokens.gcp_expiry = token.expiry_date
+            database.ref('class-scheduler/' + email).update({
+                gcp_access_token: token.access_token,
+                gcp_refresh_token: token.refresh_token,
+                gcp_scope: token.scope,
+                gcp_expiry: token.expiry_date
+            });
+            res.redirect('/main')
+        }
+    });
+})
+
+const getZoomToken = (code, callback) => {
     var options = {
         method: "POST",
         url: "https://zoom.us/oauth/token",
@@ -45,26 +94,30 @@ const getTokens = (code, callback) => {
             Authorization:
                 "Basic " +
                 Buffer.from(
-                    process.env.CLIENT_ID + ":" + process.env.CLIENT_SECRET
+                    process.env.ZOOM_CLIENT_ID + ":" + process.env.ZOOM_CLIENT_SECRET
                 ).toString("base64")
         }
     };
     request(options, (error, response, body) => {
         if (error) res.end(error);
         else {
-            tokens = JSON.parse(body)
+            let jsonBody = JSON.parse(body)
+            tokens = {
+                zoom_access_token: jsonBody.access_token,
+                zoom_refresh_token: jsonBody.refresh_token,
+            }
             callback()
         }
     })
 }
 
-const getUser = (callback) => {
+const getZoomUser = (callback) => {
     var options = {
         method: "GET",
         url: "https://api.zoom.us/v2/users/me",
         headers: {
             Authorization:
-                "Bearer " + tokens.access_token
+                "Bearer " + tokens.zoom_refresh_token
         }
     }
 
@@ -74,13 +127,13 @@ const getUser = (callback) => {
     });
 }
 
-const getMeetings = (callback) => {
+const getZoomMeetings = (callback) => {
     var options = {
         method: "GET",
         url: `https://api.zoom.us/v2/users/${uid}/meetings`,
         headers: {
             Authorization:
-                "Bearer " + tokens.access_token
+                "Bearer " + tokens.zoom_refresh_token
         }
     }
 
@@ -91,16 +144,20 @@ const getMeetings = (callback) => {
 }
 
 app.get("/login", (req, res) => {
-    let email = url.parse(req.url, true).query.email
+    email = url.parse(req.url, true).query.email
     database.ref('class-scheduler/' + email).on('value', (snapshot) => {
         const data = snapshot.val();
         if (data) {
             tokens = {
-                access_token: data.access_token,
-                refresh_token: data.refresh_token
+                zoom_access_token: data.zoom_access_token,
+                zoom_refresh_token: data.zoom_refresh_token,
+                gcp_access_token: data.gcp_access_token,
+                gcp_refresh_token: data.gcp_refresh_token,
+                gcp_scope: data.gcp_scope,
+                gcp_expiry: data.gcp_expiry,
             }
             uid = data.uid
-            res.redirect('/main')
+            gcpAuthorize(res)
         } else {
             res.end()
         }
@@ -108,18 +165,19 @@ app.get("/login", (req, res) => {
 })
 
 app.get("/token", (req, res) => {
-    getTokens(url.parse(req.url, true).query.code, () => {
-        getUser((user) => {
+    getZoomToken(url.parse(req.url, true).query.code, () => {
+        getZoomUser((user) => {
             console.log(user);
             if (user) {
                 uid = user.id
-                database.ref('class-scheduler/' + user.email.split('.')[0]).set({
+                email = user.email.split('.')[0]
+                database.ref('class-scheduler/' + email).set({
                     uid: user.id,
                     email: user.email,
-                    access_token: tokens.access_token,
-                    refresh_token: tokens.refresh_token
+                    zoom_access_token: tokens.zoom_access_token,
+                    zoom_refresh_token: tokens.zoom_refresh_token
                 });
-                res.redirect('/main')
+                gcpAuthorize(res)
             }
             else {
                 res.end()
@@ -129,7 +187,7 @@ app.get("/token", (req, res) => {
 });
 
 app.get("/meetings", (req, res) => {
-    getMeetings((meetings) => {
+    getZoomMeetings((meetings) => {
         console.log(meetings);
         res.write(JSON.stringify(meetings));
         res.end();

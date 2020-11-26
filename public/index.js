@@ -24,7 +24,7 @@ function appendNewDream(dream) {
 const loginHandler = () => {
   const email = document.getElementById("email").value;
   fetch('/login?email=' + email.split('.')[0]).then(async(response) => {
-    if(response) document.getElementById("resPreview").innerHTML = await response.text()
+    if(response) await response.text()
     else {
       form.submit()
     }
