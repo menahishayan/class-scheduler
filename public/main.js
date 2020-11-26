@@ -15,8 +15,8 @@ if (vars.u !== '') {
   window.localStorage.setItem('u', vars.u)
   fetch("/meetings").then((res) => {
     let data = res.text()
-    if(data.meetings.total_records == 0) document.getElementById("meetings").innerHTML += "No zoom meetings.\n"
-    if(data.courses.length == 0) document.getElementById("courses").innerHTML += "No courses enrolled.\n"
+    if(data.meetings.total_records == 0) document.getElementById("meetings").innerHTML += "No zoom meetings.<br/>"
+    if(data.courses.length == 0) document.getElementById("courses").innerHTML += "No courses enrolled.<br/>"
     else {
     data.courses.forEach(c => {
       document.getElementById("courses").innerHTML += `<div class="course">
