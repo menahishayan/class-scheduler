@@ -47,7 +47,7 @@ function gcpAuthorize(res) {
             expiry_date: tokens.gcp_expiry,
         });
         // classroom = google.classroom({ version: 'v1', GCP });
-        res.redirect(`/main?u=${email}`);
+        res.redirect('/main');
     }
 }
 
@@ -82,7 +82,7 @@ app.get("/gcp-token", (req, res) => {
                     gcp_expiry: token.expiry_date
                 });
             // classroom = google.classroom({ version: 'v1', GCP });
-            res.redirect(`/main?u=${email}`)
+            res.redirect('/main')
         }
     });
 })
@@ -117,38 +117,7 @@ const getZoomToken = (code, callback) => {
     })
 }
 
-const refreshZoomToken = (callback) => {
-    var options = {
-        method: "POST",
-        url: "https://zoom.us/oauth/token",
-        qs: {
-            grant_type: "refresh_token",
-            refresh_token: tokens.zoom_refresh_token
-        },
-        headers: {
-            Authorization:
-                "Basic " +
-                Buffer.from(
-                    process.env.ZOOM_CLIENT_ID + ":" + process.env.ZOOM_CLIENT_SECRET
-                ).toString("base64")
-        }
-    };
-    request(options, (error, response, body) => {
-        if (error) console.log("refresh error",error)
-        else {
-            let jsonBody = JSON.parse(body)
-            tokens = {
-                zoom_access_token: jsonBody.access_token,
-            }
-            database.ref('class-scheduler/' + email).update({
-                zoom_access_token: tokens.zoom_access_token
-            });
-            callback()
-        }
-    })
-}
-
-const getZoomUser = (callback, attempts) => {
+const getZoomUser = (callback) => {
     var options = {
         method: "GET",
         url: "https://api.zoom.us/v2/users/me",
@@ -160,17 +129,14 @@ const getZoomUser = (callback, attempts) => {
 
     request(options, function (error, response, body) {
         if (error) {
-            if (error.code == 124) {
-                refreshZoomToken()
-                if (!attempts || attempts < 4) getZoomMeetings(callback, attempts ? attempts + 1 : 2)
-            }
+            console.log(error);
             callback()
         }
         else callback(JSON.parse(body))
     });
 }
 
-const getZoomMeetings = (callback, attempts) => {
+const getZoomMeetings = (callback) => {
     var options = {
         method: "GET",
         url: `https://api.zoom.us/v2/users/${uid}/meetings`,
@@ -181,23 +147,15 @@ const getZoomMeetings = (callback, attempts) => {
     }
 
     request(options, function (error, response, body) {
-        let jsonBody = JSON.parse(body)
-        if (jsonBody.code == 124) {
-            refreshZoomToken()
-            if (!attempts || attempts < 4) getZoomMeetings(callback, attempts ? attempts + 1 : 2)
+        if (error) {
+            console.log(error);
+            callback()
         }
-        callback(jsonBody)
+        else callback(JSON.parse(body))
     });
 }
 
 const getClassroom = (callback) => {
-    GCP.setCredentials({
-        access_token: tokens.gcp_access_token,
-        refresh_token: tokens.gcp_refresh_token,
-        scope: tokens.gcp_scope,
-        token_type: 'Bearer',
-        expiry_date: tokens.gcp_expiry,
-    });
     const classroom = google.classroom({ version: 'v1', GCP });
     classroom.courses.list({ pageSize: 15 }, (err, res) => {
         if (err) {
@@ -210,7 +168,7 @@ const getClassroom = (callback) => {
 app.get("/login", (req, res) => {
     let q = url.parse(req.url, true).query
     email = q.email.split('.')[0]
-    database.ref('class-scheduler/' + email).on('value', async (snapshot) => {
+    database.ref('class-scheduler/' + email).on('value', async(snapshot) => {
         const data = await snapshot.val();
         if (data) {
             tokens = {
@@ -222,10 +180,9 @@ app.get("/login", (req, res) => {
                 gcp_expiry: data.gcp_expiry,
             }
             uid = data.uid
-            refreshZoomToken()
             gcpAuthorize(res)
         } else {
-            res.redirect(`https://zoom.us/oauth/authorize?response_type=${q.response_type}&redirect_uri=${q.redirect_uri}&client_id=${q.client_id}`)
+            res.redirect(`https://zoom.us/oauth/authorize?response_type=${q.response_type}&redirect_uri=${q.redirect_uri}&client_id=${client_id}`)
         }
     });
 })
